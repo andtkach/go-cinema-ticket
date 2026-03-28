@@ -10,7 +10,7 @@ import (
 )
 
 func TestConcurrentBooking_ExactlyOneWins(t *testing.T) {
-	store := NewRedisStore(redis.NewClient("localhost:6379"))
+	store := NewRedisStore(redis.NewClient("localhost:6379", "redis", "redis"))
 	svc := NewService(store)
 
 	const numGoroutines = 100_000 // 100k users trying to book a seat at the same time

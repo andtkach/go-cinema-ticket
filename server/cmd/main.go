@@ -16,7 +16,7 @@ func main() {
 
 	mux.Handle("GET /", http.FileServer(http.Dir("static")))
 
-	store := booking.NewRedisStore(redis.NewClient("localhost:6379"))
+	store := booking.NewRedisStore(redis.NewClient("localhost:6379", "redis", "redis"))
 	svc := booking.NewService(store)
 
 	bookingHandler := booking.NewHandler(svc)

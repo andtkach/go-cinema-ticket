@@ -7,8 +7,12 @@ import (
 	goredis "github.com/redis/go-redis/v9"
 )
 
-func NewClient(addr string) *goredis.Client {
-	rdb := goredis.NewClient(&goredis.Options{Addr: addr})
+func NewClient(addr, username, password string) *goredis.Client {
+	rdb := goredis.NewClient(&goredis.Options{
+		Addr:     addr,
+		Username: username,
+		Password: password,
+	})
 	if err := rdb.Ping(context.Background()).Err(); err != nil {
 		log.Fatalf("redis ping: %v", err)
 	}

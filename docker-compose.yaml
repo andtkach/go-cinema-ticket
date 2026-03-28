@@ -2,15 +2,77 @@ services:
   redis:
     container_name: redis
     image: redis:7-alpine
+    restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - ./data/redis:/data
+      - ./config/redis/users.acl:/etc/redis/users.acl:ro
+    command: >
+      redis-server
+      --aclfile /etc/redis/users.acl
+      --save 60 1
+      --save 300 10
+      --save 900 100
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --loglevel notice
+    healthcheck:
+      test: ["CMD", "redis-cli", "-u", "redis://redis:redis@localhost:6379", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  postgres:
+    container_name: postgres
+    image: postgres:17-alpine
+    restart: unless-stopped
+    shm_size: 128mb
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-cinema}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --locale=C
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    command: >
+      postgres
+      -c shared_buffers=128MB
+      -c max_connections=100
+      -c effective_cache_size=256MB
+      -c wal_buffers=16MB
+      -c checkpoint_completion_target=0.9
+      -c timezone=UTC
+      -c log_timezone=UTC
+      -c log_min_duration_statement=1000
+      -c log_connections=on
+      -c log_disconnections=on
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    stop_grace_period: 60s
+
   redis-commander:
     container_name: redis-commander
     hostname: redis-commander
     image: ghcr.io/joeferner/redis-commander:latest
-    restart: always
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
     environment:
-      - REDIS_HOSTS=local:redis:6379
+      - REDIS_HOSTS=local:redis:6379:0:redis
+      - REDIS_USERNAME=redis
+      - REDIS_PASSWORD=redis
     ports:
-      - "8081:8081"
+      - "127.0.0.1:8081:8081"
     user: redis
