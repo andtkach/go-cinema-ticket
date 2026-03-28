@@ -16,7 +16,7 @@ go run ./cmd
 # Build binary
 go build -o main ./cmd
 
-# Run all tests (requires Redis on localhost:6379)
+# Run all tests (requires Redis on localhost:16379)
 go test ./...
 
 # Run tests with verbose output
@@ -61,5 +61,5 @@ Movies and seat grids are hardcoded in `main.go` (inception: 5×8, dune: 4×6).
 ### Infrastructure
 
 Docker Compose provides two services:
-- **redis** on port 6379
+- **redis** on port 16379
 - **redis-commander** on port 8081 (web UI for inspecting Redis data)

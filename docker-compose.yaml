@@ -4,7 +4,7 @@ services:
     image: redis:7-alpine
     restart: unless-stopped
     ports:
-      - "127.0.0.1:6379:6379"
+      - "127.0.0.1:16379:6379"
     volumes:
       - ./data/redis:/data
       - ./config/redis/users.acl:/etc/redis/users.acl:ro
@@ -20,11 +20,11 @@ services:
       --maxmemory-policy allkeys-lru
       --loglevel notice
     healthcheck:
-      test: ["CMD", "redis-cli", "-u", "redis://redis:redis@localhost:6379", "ping"]
+      test: ["CMD-SHELL", "redis-cli -h 127.0.0.1 -p 6379 --user redis -a redis --no-auth-warning ping"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 5s
+      start_period: 10s
 
   postgres:
     container_name: postgres
@@ -32,7 +32,7 @@ services:
     restart: unless-stopped
     shm_size: 128mb
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:15432:5432"
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
     environment:
@@ -70,7 +70,8 @@ services:
       redis:
         condition: service_healthy
     environment:
-      - REDIS_HOSTS=local:redis:6379:0:redis
+      - REDIS_HOSTS=local:redis:16379:0:redis
+      # redis-commander connects to the internal Docker network port, not the host port
       - REDIS_USERNAME=redis
       - REDIS_PASSWORD=redis
     ports:

@@ -1,5 +1,2 @@
-# Disable the default unauthenticated user
-user default off nopass nocommands nokeypatterns
-
-# Application user: full access, authenticated by password
+user default off
 user redis on >redis ~* &* +@all
