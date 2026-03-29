@@ -50,12 +50,40 @@ A React (Vite) web app that talks to the server via a dev proxy.
 | `make build-client` | Build production assets to `client/dist/` |
 | `make publish-client` | Build and copy assets to `server/static/` for the server to host |
 
+## Nginx gateway
+
+An nginx container acts as an HTTPS reverse proxy and gateway, routing traffic by path prefix to backend services.
+
+**First-time setup** — generate the self-signed TLS certificate (required before starting the container):
+
+```bash
+make nginx-certs
+```
+
+This writes `config/nginx/certs/server.key` and `config/nginx/certs/server.crt` (valid 365 days, `CN=localhost`).
+
+| Command | Description |
+|---|---|
+| `make nginx-certs` | Generate a self-signed TLS certificate |
+| `make nginx-reload` | Reload nginx config without downtime |
+
+**Routes** (all via `https://localhost:17091`):
+
+| Path | Upstream |
+|---|---|
+| `/app/` | Cinema server → `localhost:17080` |
+| `/idp/` | Identity provider → `localhost:17090` (future) |
+| `/health` | nginx health check — returns `200 ok` |
+
+> Browsers will warn about the self-signed certificate. Accept the exception or add `config/nginx/certs/server.crt` to your system trust store.
+
 ## Ports
 
-| Service | Host port |
-|---|---|
-| Server | 17080 |
-| Client | 17070 |
-| Redis | 16379 |
-| Postgres | 15432 |
-| Redis Commander | 16378 |
+| Service | Host port | Protocol |
+|---|---|---|
+| Nginx gateway | 17091 | HTTPS |
+| Server | 17080 | HTTP |
+| Client (dev) | 17070 | HTTP |
+| Redis | 16379 | TCP |
+| Postgres | 15432 | TCP |
+| Redis Commander | 16378 | HTTP |

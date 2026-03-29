@@ -1,4 +1,4 @@
-.PHONY: infra-up infra-down infra-restart infra-logs infra-ps build-server run-server test-server tidy-server install-client dev-client build-client publish-client
+.PHONY: infra-up infra-down infra-restart infra-logs infra-ps build-server run-server test-server tidy-server install-client dev-client build-client publish-client nginx-certs nginx-reload
 
 # Infrastructure
 infra-up:
@@ -44,6 +44,17 @@ build-client:
 	cd client && npm run build
 
 publish-client:
-	cd client && npm run build
+	cd client && npx vite build --base=/app/
 	rm -rf server/static
 	cp -r client/dist server/static
+
+# Nginx
+nginx-certs:
+	openssl req -x509 -nodes -newkey rsa:2048 -days 365 \
+		-keyout config/nginx/certs/server.key \
+		-out config/nginx/certs/server.crt \
+		-subj "/CN=localhost" \
+		-addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+
+nginx-reload:
+	docker exec nginx nginx -s reload
