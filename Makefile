@@ -62,4 +62,4 @@ nginx-certs:
 		-addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
 
 nginx-reload:
-	docker exec nginx nginx -s reload
+	docker exec nginx-app nginx -s reload

@@ -1,6 +1,6 @@
 services:
-  redis:
-    container_name: redis
+  redis-app:
+    container_name: redis-app
     image: redis:7-alpine
     restart: unless-stopped
     ports:
@@ -26,8 +26,8 @@ services:
       retries: 5
       start_period: 10s
 
-  postgres:
-    container_name: postgres
+  postgres-app:
+    container_name: postgres-app
     image: postgres:17-alpine
     restart: unless-stopped
     shm_size: 128mb
@@ -61,8 +61,8 @@ services:
       start_period: 10s
     stop_grace_period: 60s
 
-  nginx:
-    container_name: nginx
+  nginx-app:
+    container_name: nginx-app
     image: nginx:1.27-alpine
     restart: unless-stopped
     ports:
@@ -85,10 +85,10 @@ services:
     image: ghcr.io/joeferner/redis-commander:latest
     restart: unless-stopped
     depends_on:
-      redis:
+      redis-app:
         condition: service_healthy
     environment:
-      - REDIS_HOSTS=local:redis:16379:0:redis
+      - REDIS_HOSTS=local:redis-app:16379:0:redis
       # redis-commander connects to the internal Docker network port, not the host port
       - REDIS_USERNAME=redis
       - REDIS_PASSWORD=redis
