@@ -135,16 +135,18 @@ Authentik uses Redis as its task broker. The `.env` file must contain the follow
 ```
 AUTHENTIK_REDIS__HOST=redis-app
 AUTHENTIK_REDIS__PORT=6379
-AUTHENTIK_REDIS__USERNA
-Init Authentic setup
-email: admin@localhost
-pass: P@ssw0rdME=redis
+AUTHENTIK_REDIS__USERNAME=redis
 AUTHENTIK_REDIS__PASSWORD=redis
 ```
 
 Without these, `worker-idp` will start but hang after migrations and `server-idp` will stay stuck on "Server is starting up".
 
 ### Application configuration
+
+
+Init Authentic setup
+email: admin@localhost
+pass: P@ssw0rd
 
 After completing the initial setup wizard, configure Authentik for the cinema app.
 
@@ -220,7 +222,7 @@ VITE_CLIENT_ID=<client-id-from-authentik>
 `.env` (server-side):
 
 ```
-AUTHENTIK_ISSUER_URL=https://localhost:17091/idp/application/o/cinema-app/
+AUTHENTIK_ISSUER_URL=https://localhost:17091/application/o/cinema-app/
 AUTHENTIK_CLIENT_ID=<client-id-from-authentik>
 ```
 

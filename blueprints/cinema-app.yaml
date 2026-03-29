@@ -26,7 +26,6 @@ entries:
   # ── Groups scope mapping ───────────────────────────────────────────────────
 
   - model: authentik_providers_oauth2.scopemapping
-    id: cinema-groups-mapping
     state: present
     identifiers:
       name: cinema-groups
@@ -45,6 +44,7 @@ entries:
     attrs:
       name: cinema-provider
       authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
       client_type: public
       client_id: "ZJ4Pj14kxLyA5sYlI1OuznYpjZsHvdOcaJ1yWgJp"
       signing_key: !Find [authentik_crypto.certificatekeypair, [name, "authentik Self-signed Certificate"]]
@@ -57,7 +57,7 @@ entries:
         - !Find [authentik_providers_oauth2.scopemapping, [managed, "goauthentik.io/providers/oauth2/scope-openid"]]
         - !Find [authentik_providers_oauth2.scopemapping, [managed, "goauthentik.io/providers/oauth2/scope-profile"]]
         - !Find [authentik_providers_oauth2.scopemapping, [managed, "goauthentik.io/providers/oauth2/scope-email"]]
-        - !KeyOf cinema-groups-mapping
+        - !Find [authentik_providers_oauth2.scopemapping, [name, cinema-groups]]
 
   # ── Application ───────────────────────────────────────────────────────────
 
