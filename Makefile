@@ -7,7 +7,7 @@ run-all: infra-up publish-client
 
 # Infrastructure
 infra-up:
-	mkdir -p data/redis-app data/postgres-app idp/data/postgres-idp idp/data/server-idp idp/data/postgres-worker idp/certs idp/custom-templates
+	mkdir -p data/redis-app data/postgres-app data/postgres-idp data/server-idp data/postgres-worker data/certs data/custom-templates
 	docker compose up -d
 
 infra-down:

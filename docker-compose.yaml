@@ -97,8 +97,9 @@ services:
     user: redis
 
   postgres-idp:
+    container_name: postgres-idp
     env_file:
-      - ./idp/.env
+      - .env
     environment:
       POSTGRES_DB: ${PG_DB:-authentik}
       POSTGRES_PASSWORD: ${AUTHENTIK_POSTGRES_PASS:?database password required}
@@ -116,15 +117,16 @@ services:
       - 15434:5432
     restart: unless-stopped
     volumes:
-      - ./idp/data/postgres-idp:/var/lib/postgresql/data
+      - ./data/postgres-idp:/var/lib/postgresql/data
 
   server-idp:
+    container_name: server-idp
     command: server
     depends_on:
       postgres-idp:
         condition: service_healthy
     env_file:
-      - ./idp/.env
+      - .env
     environment:
       AUTHENTIK_POSTGRESQL__HOST: postgres-idp
       AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
@@ -138,16 +140,17 @@ services:
     restart: unless-stopped
     shm_size: 512mb
     volumes:
-      - ./idp/data/server-idp:/data
-      - ./idp/custom-templates:/templates
+      - ./data/server-idp:/data
+      - ./data/custom-templates:/templates
 
   worker-idp:
+    container_name: worker-idp
     command: worker
     depends_on:
       postgres-idp:
         condition: service_healthy
     env_file:
-      - ./idp/.env
+      - .env
     environment:
       AUTHENTIK_POSTGRESQL__HOST: postgres-idp
       AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
@@ -160,6 +163,6 @@ services:
     user: root
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./idp/data/postgres-worker:/data
-      - ./idp/certs:/certs
-      - ./idp/custom-templates:/templates
+      - ./data/postgres-worker:/data
+      - ./data/certs:/certs
+      - ./data/custom-templates:/templates
