@@ -27,7 +27,7 @@ func main() {
 	mux.HandleFunc("PUT /sessions/{sessionID}/confirm", bookingHandler.ConfirmSession)
 	mux.HandleFunc("DELETE /sessions/{sessionID}", bookingHandler.ReleaseSession)
 
-	if err := http.ListenAndServe(":8080", mux); err != nil {
+	if err := http.ListenAndServe(":17080", mux); err != nil {
 		log.Fatal(err)
 	}
 }

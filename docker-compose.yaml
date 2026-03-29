@@ -75,5 +75,5 @@ services:
       - REDIS_USERNAME=redis
       - REDIS_PASSWORD=redis
     ports:
-      - "127.0.0.1:8081:8081"
+      - "127.0.0.1:16378:8081"
     user: redis

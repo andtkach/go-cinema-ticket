@@ -35,14 +35,14 @@ cp .env.example .env
 | `make tidy` | Run `go mod tidy` to sync dependencies |
 | `make clean` | Remove the compiled binary |
 
-The server starts on [http://localhost:8080](http://localhost:8080).
-Redis Commander (Redis UI) is available at [http://localhost:8081](http://localhost:8081).
+The server starts on [http://localhost:17080](http://localhost:17080).
+Redis Commander (Redis UI) is available at [http://localhost:16378](http://localhost:16378).
 
 ## Ports
 
 | Service | Host port |
 |---|---|
-| Server | 8080 |
+| Server | 17080 |
 | Redis | 16379 |
 | Postgres | 15432 |
-| Redis Commander | 8081 |
+| Redis Commander | 16378 |

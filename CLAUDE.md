@@ -10,7 +10,7 @@ All commands run from the `server/` directory.
 # Start Redis (required before running server or tests)
 docker-compose up -d
 
-# Run the server (port 8080)
+# Run the server (port 17080)
 go run ./cmd
 
 # Build binary
@@ -62,4 +62,4 @@ Movies and seat grids are hardcoded in `main.go` (inception: 5×8, dune: 4×6).
 
 Docker Compose provides two services:
 - **redis** on port 16379
-- **redis-commander** on port 8081 (web UI for inspecting Redis data)
+- **redis-commander** on port 16378 (web UI for inspecting Redis data)
