@@ -1,5 +1,5 @@
 services:
-  postgresql:
+  postgres-idp:
     env_file:
     - .env
     environment:
@@ -15,18 +15,20 @@ services:
       - pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}
       timeout: 5s
     image: docker.io/library/postgres:16-alpine
+    ports:
+    - 15434:5432
     restart: unless-stopped
     volumes:
-    - database:/var/lib/postgresql/data
-  server:
+    - ./data/postgres-idp:/var/lib/postgresql/data
+  server-idp:
     command: server
     depends_on:
-      postgresql:
+      postgres-idp:
         condition: service_healthy
     env_file:
     - .env
     environment:
-      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__HOST: postgres-idp
       AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
       AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRES_PASS}
       AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
@@ -38,17 +40,17 @@ services:
     restart: unless-stopped
     shm_size: 512mb
     volumes:
-    - ./data:/data
+    - ./data/server-idp:/data
     - ./custom-templates:/templates
-  worker:
+  worker-idp:
     command: worker
     depends_on:
-      postgresql:
+      postgres-idp:
         condition: service_healthy
     env_file:
     - .env
     environment:
-      AUTHENTIK_POSTGRESQL__HOST: postgresql
+      AUTHENTIK_POSTGRESQL__HOST: postgres-idp
       AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
       AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRES_PASS}
       AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
@@ -59,9 +61,6 @@ services:
     user: root
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
-    - ./data:/data
+    - ./data/postgres-worker:/data
     - ./certs:/certs
     - ./custom-templates:/templates
-volumes:
-  database:
-    driver: local

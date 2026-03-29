@@ -6,7 +6,7 @@ services:
     ports:
       - "127.0.0.1:16379:6379"
     volumes:
-      - ./data/redis:/data
+      - ./data/redis-app:/data
       - ./config/redis/users.acl:/etc/redis/users.acl:ro
     command: >
       redis-server
@@ -34,7 +34,7 @@ services:
     ports:
       - "127.0.0.1:15432:5432"
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - ./data/postgres-app:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}

@@ -35,3 +35,4 @@ data/postgres/
 # .idea/
 # .vscode/
 server/main
+data/redis-app/dump.rdb
