@@ -34,7 +34,7 @@ This starts the infrastructure (Docker), builds and publishes the client, starts
 
 | Command | Description |
 |---|---|
-| `make infra-up` | Start Redis and Postgres in the background |
+| `make infra-up` | Start all containers in the background |
 | `make infra-down` | Stop and remove containers |
 | `make infra-restart` | Restart all containers |
 | `make infra-logs` | Tail logs from all containers |
@@ -86,10 +86,52 @@ This writes `config/nginx/certs/server.key` and `config/nginx/certs/server.crt` 
 | Path | Upstream |
 |---|---|
 | `/app/` | Cinema server → `localhost:17080` |
-| `/idp/` | Identity provider → `localhost:17090` (future) |
+| `/idp/` | Identity provider → `localhost:17090` |
 | `/health` | nginx health check — returns `200 ok` |
 
 > Browsers will warn about the self-signed certificate. Accept the exception or add `config/nginx/certs/server.crt` to your system trust store.
+
+## Identity provider (Authentik)
+
+Authentik is used as the identity provider. It runs as two containers: `server-idp` (HTTP/HTTPS frontend) and `worker-idp` (background task runner). Both require Redis and PostgreSQL to be healthy before they start.
+
+### First-time start
+
+On the very first `make infra-up`, Authentik runs all database migrations before it becomes available. This takes **2-3 minutes**. The UI will show "Server is starting up" until migrations complete — this is normal.
+
+Open the setup wizard once the server is ready:
+
+```
+http://localhost:17060/if/flow/initial-setup/
+```
+
+Set your admin email and password. After completing the wizard, the full admin UI is available at:
+
+```
+http://localhost:17060
+```
+
+### Redis requirement
+
+Authentik uses Redis as its task broker. The `.env` file must contain the following (already included in `.env.example`):
+
+```
+AUTHENTIK_REDIS__HOST=redis-app
+AUTHENTIK_REDIS__PORT=6379
+AUTHENTIK_REDIS__USERNAME=redis
+AUTHENTIK_REDIS__PASSWORD=redis
+```
+
+Without these, `worker-idp` will start but hang after migrations and `server-idp` will stay stuck on "Server is starting up".
+
+### Clean restart
+
+To wipe all Authentik data and start fresh (re-runs the setup wizard):
+
+```bash
+docker compose down -v
+make infra-up
+```
 
 ## Ports
 
@@ -98,6 +140,10 @@ This writes `config/nginx/certs/server.key` and `config/nginx/certs/server.crt` 
 | Nginx gateway | 17091 | HTTPS |
 | Server | 17080 | HTTP |
 | Client (dev) | 17070 | HTTP |
+| Authentik (HTTP) | 17060 | HTTP |
+| Authentik (HTTPS) | 17061 | HTTPS |
 | Redis | 16379 | TCP |
-| Postgres | 15432 | TCP |
+| Postgres (app) | 15432 | TCP |
+| Postgres (IDP) | 15434 | TCP |
 | Redis Commander | 16378 | HTTP |
+
