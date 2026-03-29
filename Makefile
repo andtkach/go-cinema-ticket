@@ -1,4 +1,9 @@
-.PHONY: infra-up infra-down infra-restart infra-logs infra-ps build-server run-server test-server tidy-server install-client dev-client build-client publish-client nginx-certs nginx-reload
+.PHONY: infra-up infra-down infra-restart infra-logs infra-ps build-server run-server test-server tidy-server install-client dev-client build-client publish-client nginx-certs nginx-reload run-all
+
+# All-in-one
+run-all: infra-up publish-client
+	cd server && go run ./cmd &
+	@sleep 2 && xdg-open https://localhost:17091/app/ &
 
 # Infrastructure
 infra-up:

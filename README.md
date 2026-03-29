@@ -16,6 +16,20 @@ Copy the environment file and adjust credentials if needed:
 cp .env.example .env
 ```
 
+Generate the TLS certificate once (required for nginx):
+
+```bash
+make nginx-certs
+```
+
+Then start everything with a single command:
+
+```bash
+make run-all
+```
+
+This starts the infrastructure (Docker), builds and publishes the client, starts the server, and opens [https://localhost:17091/app/](https://localhost:17091/app/) in the browser.
+
 ## Infrastructure
 
 | Command | Description |
