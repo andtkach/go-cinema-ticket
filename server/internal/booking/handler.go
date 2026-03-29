@@ -1,11 +1,11 @@
 package booking
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/andtkach/cinema/internal/auth"
 	"github.com/andtkach/cinema/internal/utils"
 )
 
@@ -17,22 +17,13 @@ func NewHandler(svc *Service) *handler {
 	return &handler{svc}
 }
 
-type holdSeatRequest struct {
-	UserID string `json:"user_id"`
-}
-
 func (h *handler) HoldSeat(w http.ResponseWriter, r *http.Request) {
 	movieID := r.PathValue("movieID")
 	seatID := r.PathValue("seatID")
-
-	var req holdSeatRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		log.Println(err)
-		return
-	}
+	userID := auth.UserIDFromContext(r.Context())
 
 	data := Booking{
-		UserID:  req.UserID,
+		UserID:  userID,
 		SeatID:  seatID,
 		MovieID: movieID,
 	}
@@ -85,17 +76,9 @@ type seatInfo struct {
 
 func (h *handler) ConfirmSession(w http.ResponseWriter, r *http.Request) {
 	sessionID := r.PathValue("sessionID")
+	userID := auth.UserIDFromContext(r.Context())
 
-	var req holdSeatRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return
-	}
-
-	if req.UserID == "" {
-		return
-	}
-
-	session, err := h.svc.ConfirmSeat(r.Context(), sessionID, req.UserID)
+	session, err := h.svc.ConfirmSeat(r.Context(), sessionID, userID)
 	if err != nil {
 		return
 	}
@@ -104,7 +87,7 @@ func (h *handler) ConfirmSession(w http.ResponseWriter, r *http.Request) {
 		SessionID: session.ID,
 		MovieID:   session.MovieID,
 		SeatID:    session.SeatID,
-		UserID:    req.UserID,
+		UserID:    userID,
 		Status:    session.Status,
 	})
 }
@@ -120,17 +103,9 @@ type sessionResponse struct {
 
 func (h *handler) ReleaseSession(w http.ResponseWriter, r *http.Request) {
 	sessionID := r.PathValue("sessionID")
+	userID := auth.UserIDFromContext(r.Context())
 
-	var req holdSeatRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		log.Println(err)
-		return
-	}
-	if req.UserID == "" {
-		return
-	}
-
-	err := h.svc.ReleaseSeat(r.Context(), sessionID, req.UserID)
+	err := h.svc.ReleaseSeat(r.Context(), sessionID, userID)
 	if err != nil {
 		log.Println(err)
 		return

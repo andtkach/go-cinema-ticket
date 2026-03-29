@@ -53,6 +53,15 @@ This starts the infrastructure (Docker), builds and publishes the client, starts
 The server starts on [http://localhost:17080](http://localhost:17080).
 Redis Commander (Redis UI) is available at [http://localhost:16378](http://localhost:16378).
 
+The server reads two optional environment variables for authentication:
+
+| Variable | Description |
+|---|---|
+| `AUTHENTIK_ISSUER_URL` | OIDC issuer URL from Authentik |
+| `AUTHENTIK_CLIENT_ID` | OAuth2 client ID from Authentik |
+
+If either is unset the server starts without auth (useful before Authentik is configured).
+
 ## Client
 
 A React (Vite) web app that talks to the server via a dev proxy.
@@ -63,6 +72,14 @@ A React (Vite) web app that talks to the server via a dev proxy.
 | `make dev-client` | Start the dev server on [http://localhost:17070](http://localhost:17070) |
 | `make build-client` | Build production assets to `client/dist/` |
 | `make publish-client` | Build and copy assets to `server/static/` for the server to host |
+
+Client env vars live in `client/.env` (production) and `client/.env.development` (local dev):
+
+| Variable | Description |
+|---|---|
+| `VITE_AUTHENTIK_URL` | Authentik base URL as seen by the browser |
+| `VITE_CLIENT_ID` | OAuth2 client ID from Authentik |
+| `VITE_REDIRECT_URI` | OAuth2 redirect URI after login |
 
 ## Nginx gateway
 
@@ -86,7 +103,7 @@ This writes `config/nginx/certs/server.key` and `config/nginx/certs/server.crt` 
 | Path | Upstream |
 |---|---|
 | `/app/` | Cinema server → `localhost:17080` |
-| `/idp/` | Identity provider → `localhost:17090` |
+| `/idp/` | Authentik → `server-idp:9000` |
 | `/health` | nginx health check — returns `200 ok` |
 
 > Browsers will warn about the self-signed certificate. Accept the exception or add `config/nginx/certs/server.crt` to your system trust store.
@@ -118,11 +135,101 @@ Authentik uses Redis as its task broker. The `.env` file must contain the follow
 ```
 AUTHENTIK_REDIS__HOST=redis-app
 AUTHENTIK_REDIS__PORT=6379
-AUTHENTIK_REDIS__USERNAME=redis
+AUTHENTIK_REDIS__USERNA
+Init Authentic setup
+email: admin@localhost
+pass: P@ssw0rdME=redis
 AUTHENTIK_REDIS__PASSWORD=redis
 ```
 
 Without these, `worker-idp` will start but hang after migrations and `server-idp` will stay stuck on "Server is starting up".
+
+### Application configuration
+
+After completing the initial setup wizard, configure Authentik for the cinema app.
+
+#### Option A — Apply the blueprint (recommended)
+
+A blueprint file at `blueprints/cinema-app.yaml` automates all configuration steps below. It is automatically discovered by Authentik because the directory is mounted into the containers.
+
+1. Open **System → Blueprints** in the Authentik admin UI (`http://localhost:17060`)
+2. Find **Cinema App Setup** in the list and click **Apply**
+
+That's it — groups, provider, scope mapping, and application are created in one click. The Client ID is fixed at `ZJ4Pj14kxLyA5sYlI1OuznYpjZsHvdOcaJ1yWgJp` so the env files never need updating after a clean restart.
+
+#### Option B — Manual setup
+
+All steps are done in the Authentik admin UI at `http://localhost:17060`.
+
+**1. Create groups**
+
+Go to **Directory → Groups** and create two groups:
+
+| Name | Purpose |
+|---|---|
+| `cinema-admins` | Future admin capabilities |
+| `cinema-clients` | Regular users who can browse and book |
+
+**2. Create an OAuth2/OIDC provider**
+
+Go to **Applications → Providers → Create** and select **OAuth2/OpenID Provider**.
+
+| Field | Value |
+|---|---|
+| Name | `cinema-provider` |
+| Authorization flow | `default-provider-authorization-explicit-consent` |
+| Client type | **Public** (no client secret — PKCE only) |
+| Client ID | *(auto-generated — copy this for step 5)* |
+| Signing algorithm | RS256 |
+| Redirect URIs | `https://localhost:17091/app/callback` |
+| Redirect URIs | `http://localhost:17070/callback` |
+| Scopes | `openid`, `profile`, `email` |
+
+**3. Create an application**
+
+Go to **Applications → Applications → Create**.
+
+| Field | Value |
+|---|---|
+| Name | `Cinema App` |
+| Slug | `cinema-app` |
+| Provider | `cinema-provider` |
+
+**4. Add a groups scope mapping**
+
+Go to **Customization → Property Mappings → Create → Scope Mapping**:
+
+| Field | Value |
+|---|---|
+| Name | `cinema-groups` |
+| Scope name | `groups` |
+| Expression | `return {"groups": [g.name for g in request.user.ak_groups.all()]}` |
+
+Then open the `cinema-provider` for editing, expand **Advanced protocol settings**, find the **Property mappings** multi-select field, and add `cinema-groups`.
+
+**5. Set environment variables**
+
+Fill in the Client ID (from step 2) in the following files:
+
+`client/.env` and `client/.env.development`:
+
+```
+VITE_CLIENT_ID=<client-id-from-authentik>
+```
+
+`.env` (server-side):
+
+```
+AUTHENTIK_ISSUER_URL=https://localhost:17091/idp/application/o/cinema-app/
+AUTHENTIK_CLIENT_ID=<client-id-from-authentik>
+```
+
+**6. Rebuild the client and restart the server**
+
+```bash
+make publish-client
+cd server && go run ./cmd
+```
 
 ### Clean restart
 
@@ -132,6 +239,8 @@ To wipe all Authentik data and start fresh (re-runs the setup wizard):
 docker compose down -v
 make infra-up
 ```
+
+After the wizard, re-apply the blueprint (Option A above) — all env vars stay the same.
 
 ## Ports
 
@@ -146,4 +255,3 @@ make infra-up
 | Postgres (app) | 15432 | TCP |
 | Postgres (IDP) | 15434 | TCP |
 | Redis Commander | 16378 | HTTP |
-

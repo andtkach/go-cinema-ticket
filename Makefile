@@ -2,12 +2,12 @@
 
 # All-in-one
 run-all: infra-up publish-client
-	cd server && go run ./cmd &
+	cd server && env $$(grep -v '^#' ../.env | xargs) go run ./cmd &
 	@sleep 2 && xdg-open https://localhost:17091/app/ &
 
 # Infrastructure
 infra-up:
-	mkdir -p data/redis-app data/postgres-app data/postgres-idp data/server-idp data/worker-idp data/certs data/custom-templates
+	mkdir -p data/redis-app data/postgres-app data/postgres-idp data/server-idp data/worker-idp data/certs data/custom-templates blueprints
 	docker compose up -d
 
 infra-down:
@@ -27,7 +27,7 @@ build-server:
 	cd server && go build -o main ./cmd
 
 run-server: infra-up
-	cd server && go run ./cmd
+	cd server && env $$(grep -v '^#' ../.env | xargs) go run ./cmd
 
 test-server: infra-up
 	cd server && go test -v -race ./...

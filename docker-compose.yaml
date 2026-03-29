@@ -142,6 +142,7 @@ services:
     volumes:
       - ./data/server-idp:/data
       - ./data/custom-templates:/templates
+      - ./blueprints:/blueprints/custom
 
   worker-idp:
     container_name: worker-idp
@@ -156,7 +157,7 @@ services:
       AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
       AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRES_PASS}
       AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
-      AUTHENTIK_SECRET_KEY: $worker{AUTHENTIK_SECRET_KEY:?secret key required}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?secret key required}
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.2.1}
     restart: unless-stopped
     shm_size: 512mb
@@ -166,3 +167,4 @@ services:
       - ./data/worker-idp:/data
       - ./data/certs:/certs
       - ./data/custom-templates:/templates
+      - ./blueprints:/blueprints/custom

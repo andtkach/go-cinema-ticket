@@ -5,10 +5,10 @@ import { Header } from './components/Header'
 import { MovieList } from './components/MovieList'
 import { SeatGrid } from './components/SeatGrid'
 import { Checkout } from './components/Checkout'
-
-const USER_ID = crypto.randomUUID().replace(/-/g, '').slice(0, 12)
+import { isLoggedIn, redirectToLogin, handleCallback, silentRefresh, getUserInfo } from './auth'
 
 export default function App() {
+  const [ready, setReady] = useState(false)
   const [movies, setMovies] = useState([])
   const [selectedMovie, setSelectedMovie] = useState(null)
   const [seats, setSeats] = useState([])
@@ -17,8 +17,30 @@ export default function App() {
   const statusTimerRef = useRef(null)
 
   useEffect(() => {
-    api('GET', '/movies').then(setMovies)
+    async function init() {
+      if (window.location.pathname.endsWith('/callback')) {
+        try {
+          await handleCallback()
+        } catch (err) {
+          console.error('Auth callback failed:', err)
+        }
+        window.history.replaceState({}, '', import.meta.env.BASE_URL)
+      }
+
+      if (!isLoggedIn()) {
+        await redirectToLogin()
+        return
+      }
+
+      silentRefresh()
+      setReady(true)
+    }
+    init()
   }, [])
+
+  useEffect(() => {
+    if (ready) api('GET', '/movies').then(setMovies)
+  }, [ready])
 
   const fetchSeats = useCallback(() => {
     if (!selectedMovie) return
@@ -36,7 +58,7 @@ export default function App() {
 
   async function handleSelectMovie(movie) {
     if (activeSession) {
-      try { await api('DELETE', `/sessions/${activeSession.sessionID}`, { user_id: USER_ID }) } catch (_) {}
+      try { await api('DELETE', `/sessions/${activeSession.sessionID}`) } catch (_) {}
       setActiveSession(null)
     }
     setSelectedMovie(movie)
@@ -46,7 +68,7 @@ export default function App() {
   async function handleHold(seatID) {
     if (activeSession) return
     try {
-      const data = await api('POST', `/movies/${selectedMovie.id}/seats/${seatID}/hold`, { user_id: USER_ID })
+      const data = await api('POST', `/movies/${selectedMovie.id}/seats/${seatID}/hold`)
       setActiveSession({
         sessionID: data.session_id,
         movieID: data.movie_id,
@@ -62,7 +84,7 @@ export default function App() {
   async function handleConfirm() {
     if (!activeSession) return
     try {
-      await api('PUT', `/sessions/${activeSession.sessionID}/confirm`, { user_id: USER_ID })
+      await api('PUT', `/sessions/${activeSession.sessionID}/confirm`)
       setActiveSession(null)
       fetchSeats()
       showStatus('Confirmed!', 'success')
@@ -74,7 +96,7 @@ export default function App() {
   async function handleRelease() {
     if (!activeSession) return
     try {
-      await api('DELETE', `/sessions/${activeSession.sessionID}`, { user_id: USER_ID })
+      await api('DELETE', `/sessions/${activeSession.sessionID}`)
       setActiveSession(null)
       fetchSeats()
       setStatus(null)
@@ -89,16 +111,20 @@ export default function App() {
     showStatus('Hold expired', 'error')
   }
 
+  if (!ready) return null
+
+  const userInfo = getUserInfo()
+
   return (
     <>
-      <Header userID={USER_ID} />
+      <Header userInfo={userInfo} />
       <MovieList movies={movies} selectedMovie={selectedMovie} onSelect={handleSelectMovie} />
       {selectedMovie && (
         <div className="content">
           <SeatGrid
             movie={selectedMovie}
             seats={seats}
-            userID={USER_ID}
+            userID={userInfo?.sub}
             activeSession={activeSession}
             onHold={handleHold}
           />
