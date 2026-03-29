@@ -34,3 +34,4 @@ data/postgres/
 # Editor/IDE
 # .idea/
 # .vscode/
+server/main
