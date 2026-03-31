@@ -21,11 +21,16 @@ func (h *handler) HoldSeat(w http.ResponseWriter, r *http.Request) {
 	movieID := r.PathValue("movieID")
 	seatID := r.PathValue("seatID")
 	userID := auth.UserIDFromContext(r.Context())
+	username := auth.UsernameFromContext(r.Context())
+	if username == "" {
+		username = userID
+	}
 
 	data := Booking{
-		UserID:  userID,
-		SeatID:  seatID,
-		MovieID: movieID,
+		UserID:   userID,
+		UserName: username,
+		SeatID:   seatID,
+		MovieID:  movieID,
 	}
 
 	session, err := h.svc.Book(data)

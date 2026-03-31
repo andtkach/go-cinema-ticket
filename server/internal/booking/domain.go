@@ -16,8 +16,13 @@ type Booking struct {
 	MovieID   string
 	SeatID    string
 	UserID    string
+	UserName  string
 	Status    string
 	ExpiresAt time.Time
+}
+
+type BookingAuditStore interface {
+	InsertHold(b Booking) error
 }
 
 type BookingStore interface {

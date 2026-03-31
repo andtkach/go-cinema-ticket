@@ -51,11 +51,22 @@ func (m *Middleware) RequireAuth(next http.Handler) http.Handler {
 		}
 
 		var claims struct {
-			Groups []string `json:"groups"`
+			Groups            []string `json:"groups"`
+			PreferredUsername string   `json:"preferred_username"`
+			Email             string   `json:"email"`
 		}
 		_ = idToken.Claims(&claims)
 
+		username := claims.PreferredUsername
+		if username == "" {
+			username = claims.Email
+		}
+		if username == "" {
+			username = idToken.Subject
+		}
+
 		ctx := WithUserID(r.Context(), idToken.Subject)
+		ctx = WithUsername(ctx, username)
 		ctx = WithGroups(ctx, claims.Groups)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

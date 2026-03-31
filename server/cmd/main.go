@@ -31,7 +31,8 @@ func main() {
 
 	// Redis — bookings
 	store := booking.NewRedisStore(redis.NewClient("localhost:16379", "redis", "redis"))
-	svc := booking.NewService(store)
+	bookingAuditStore := booking.NewPostgresAuditStore(db)
+	svc := booking.NewService(store, bookingAuditStore)
 	bookingHandler := booking.NewHandler(svc)
 
 	// Auth middleware

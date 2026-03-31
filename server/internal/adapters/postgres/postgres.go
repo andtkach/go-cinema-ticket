@@ -37,5 +37,18 @@ func runMigrations(db *sql.DB) error {
 		return err
 	}
 
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS bookings (
+			id         BIGSERIAL   PRIMARY KEY,
+			booked_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+			movie_id   TEXT        NOT NULL,
+			seat_id    TEXT        NOT NULL,
+			user_name  TEXT        NOT NULL
+		)
+	`)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

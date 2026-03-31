@@ -162,4 +162,5 @@ entries:
     attrs:
       name: Cinema App
       slug: cinema-app
+      meta_launch_url: https://localhost:17091/app/
       provider: !Find [authentik_providers_oauth2.oauth2provider, [name, cinema-provider]]

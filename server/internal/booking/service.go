@@ -3,15 +3,33 @@ package booking
 import "context"
 
 type Service struct {
-	store BookingStore
+	store      BookingStore
+	auditStore BookingAuditStore
 }
 
-func NewService(store BookingStore) *Service {
-	return &Service{store}
+func NewService(store BookingStore, auditStore ...BookingAuditStore) *Service {
+	var as BookingAuditStore
+	if len(auditStore) > 0 {
+		as = auditStore[0]
+	}
+	return &Service{store: store, auditStore: as}
 }
 
 func (s *Service) Book(b Booking) (Booking, error) {
-	return s.store.Book(b)
+	session, err := s.store.Book(b)
+	if err != nil {
+		return Booking{}, err
+	}
+	if s.auditStore != nil {
+		if err := s.auditStore.InsertHold(Booking{
+			MovieID:  session.MovieID,
+			SeatID:   session.SeatID,
+			UserName: b.UserName,
+		}); err != nil {
+			return Booking{}, err
+		}
+	}
+	return session, nil
 }
 
 func (s *Service) ListBookings(movieID string) []Booking {
