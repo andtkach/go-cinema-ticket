@@ -23,7 +23,29 @@ entries:
     attrs:
       name: cinema-clients
 
+  - model: authentik_core.group
+    state: present
+    identifiers:
+      name: cinema-global-admins
+    attrs:
+      name: cinema-global-admins
+      is_superuser: true
+
   # ── Users ─────────────────────────────────────────────────────────────────
+
+  - model: authentik_core.user
+    state: present
+    identifiers:
+      username: admin
+    attrs:
+      username: admin
+      name: admin
+      email: admin@localhost
+      path: users
+      is_active: true
+      password: "P@ssw0rd"
+      groups:
+        - !Find [authentik_core.group, [name, cinema-global-admins]]
 
   - model: authentik_core.user
     state: present

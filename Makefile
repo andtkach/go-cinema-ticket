@@ -2,7 +2,7 @@
 
 # All-in-one
 run-all: infra-up publish-client build-server
-	env $$(grep -v '^#' .env | xargs) ./server/main &
+	cd server && env $$(grep -v '^#' ../.env | xargs) ./main &
 	@sleep 2 && xdg-open https://localhost:17091/app/ &
 
 # Infrastructure
