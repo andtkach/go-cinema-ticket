@@ -13,7 +13,7 @@ export function Header({ userInfo }) {
           )}
           <div className="user-id">
             <span>user: {display}</span>
-            <button onClick={logout}>Logout</button>
+            <button onClick={logout} className="btn btn--release header-signin-btn">Logout</button>
           </div>
         </div>
       ) : (

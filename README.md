@@ -255,13 +255,17 @@ After the wizard, re-apply the blueprint (Option A above) — all env vars stay 
 | Authentik (HTTPS) | 17061 | HTTPS |
 | Redis | 16379 | TCP |
 | Postgres (app) | 15432 | TCP |
-| Postgres (IDP) | 15434 | TCP |
+| Postgres (idp) | 15434 | TCP |
 | Redis Commander | 16378 | HTTP |
 
 
 
 Idp: http://localhost:17060/
-App: https://localhost:17091/app/
+Idp: https://localhost:17061/
+
+App via gateway: https://localhost:17091/app/
+Idp via gateway: https://localhost:17091/idp/
+
 
 
 -----------------

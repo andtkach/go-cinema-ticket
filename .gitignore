@@ -36,3 +36,4 @@ data/postgres/
 # .vscode/
 server/main
 data/redis-app/dump.rdb
+.$Design.drawio.bkp
