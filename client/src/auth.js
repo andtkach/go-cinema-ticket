@@ -1,6 +1,7 @@
 const AUTHENTIK_URL = import.meta.env.VITE_AUTHENTIK_URL
 const CLIENT_ID = import.meta.env.VITE_CLIENT_ID
 const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI
+const POST_LOGOUT_REDIRECT_URI = `${window.location.origin}${import.meta.env.BASE_URL}`
 
 const AUTHORIZE_URL = `${AUTHENTIK_URL}/application/o/authorize/`
 const TOKEN_URL = `${AUTHENTIK_URL}/application/o/token/`
@@ -152,6 +153,9 @@ export function clearTokens() {
 export function logout() {
   const idToken = localStorage.getItem(STORAGE.ID_TOKEN)
   clearTokens()
-  const params = new URLSearchParams({ id_token_hint: idToken || '' })
+  const params = new URLSearchParams({
+    id_token_hint: idToken || '',
+    post_logout_redirect_uri: POST_LOGOUT_REDIRECT_URI,
+  })
   window.location.href = `${END_SESSION_URL}?${params}`
 }

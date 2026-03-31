@@ -19,7 +19,7 @@ export default function HomePage() {
         <h2>Welcome to Cinema Booking</h2>
         <p>Pick a cinema, choose your seat, and confirm in seconds.</p>
         <div className="home-actions">
-          <Link to="/booking" className="btn btn--confirm home-cta">Book a Seat</Link>
+          <Link to="/booking" className={`btn btn--confirm home-cta${!userInfo ? ' home-cta--compact' : ''}`}>Book a Seat</Link>
           {isAdmin() && (
             <Link to="/admin/movies" className="btn btn--release home-cta">Manage Movies</Link>
           )}

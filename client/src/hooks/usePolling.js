@@ -5,5 +5,5 @@ export function usePolling(fn, intervalMs, active) {
     if (!active) return
     const id = setInterval(fn, intervalMs)
     return () => clearInterval(id)
-  }, [active, intervalMs]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fn, active, intervalMs])
 }

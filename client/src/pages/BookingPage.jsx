@@ -108,7 +108,9 @@ export default function BookingPage() {
   return (
     <>
       <Header userInfo={userInfo} />
-      <MovieList movies={movies} selectedMovie={selectedMovie} onSelect={handleSelectMovie} />
+      <div className="booking-movies">
+        <MovieList movies={movies} selectedMovie={selectedMovie} onSelect={handleSelectMovie} />
+      </div>
       {selectedMovie && (
         <div className="content">
           <SeatGrid

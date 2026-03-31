@@ -17,7 +17,7 @@ export function Header({ userInfo }) {
           </div>
         </div>
       ) : (
-        <Link to="/booking" className="btn btn--confirm header-signin-btn">Sign In</Link>
+        <Link to="/booking" className="btn btn--confirm header-signin-btn header-signin-btn--compact">Sign In</Link>
       )}
     </header>
   )

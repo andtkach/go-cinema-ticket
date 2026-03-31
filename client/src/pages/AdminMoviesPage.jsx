@@ -83,14 +83,14 @@ export default function AdminMoviesPage() {
       <div className="admin-toolbar">
         <h2 className="home-section-title" style={{ marginBottom: 0 }}>Manage Movies</h2>
         {!creating && (
-          <button className="btn btn--confirm" onClick={() => { setCreating(true); setEditing(null) }}>
+          <button className="btn btn--confirm admin-add-btn" onClick={() => { setCreating(true); setEditing(null) }}>
             + Add Movie
           </button>
         )}
       </div>
 
       {creating && (
-        <div className="movie-card" style={{ marginBottom: '1.5rem', maxWidth: '360px' }}>
+        <div className="movie-card" style={{ margin: '0 auto 1.5rem', maxWidth: '360px' }}>
           <h3 style={{ marginBottom: '0.4rem', color: 'var(--accent)' }}>New Movie</h3>
           <MovieForm
             onSubmit={handleCreate}
