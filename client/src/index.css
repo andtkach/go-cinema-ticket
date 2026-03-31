@@ -157,3 +157,38 @@ header h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; }
 .status-msg.error { color: var(--danger); }
 
 .empty-state { text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 3rem 1rem; }
+
+.header-home-link { color: inherit; text-decoration: none; }
+.header-home-link:hover { color: var(--accent); }
+
+.header-signin-btn { padding: 0.3rem 0.8rem; font-size: 0.8rem; text-decoration: none; }
+
+.home-hero {
+  text-align: center;
+  padding: 3rem 1rem 2.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+
+.home-hero h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.6rem; }
+.home-hero p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.6rem; }
+
+.home-cta { display: inline-block; text-decoration: none; padding: 0.7rem 1.8rem; font-size: 0.9rem; }
+
+.home-section-title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.movie-card-link {
+  display: inline-block;
+  margin-top: 0.8rem;
+  font-size: 0.75rem;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.movie-card-link:hover { text-decoration: underline; }

@@ -257,3 +257,7 @@ After the wizard, re-apply the blueprint (Option A above) — all env vars stay 
 | Postgres (app) | 15432 | TCP |
 | Postgres (IDP) | 15434 | TCP |
 | Redis Commander | 16378 | HTTP |
+
+
+
+https://localhost:17091/app/

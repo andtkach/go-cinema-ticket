@@ -1,6 +1,6 @@
 import { getAccessToken, redirectToLogin } from './auth'
 
-const BASE = import.meta.env.BASE_URL.replace(/\/$/, '')
+export const BASE = import.meta.env.BASE_URL.replace(/\/$/, '')
 
 export async function api(method, path, body) {
   const headers = { 'Content-Type': 'application/json' }
@@ -16,4 +16,14 @@ export async function api(method, path, body) {
   const data = await r.json()
   if (!r.ok) throw new Error(data.error || 'request failed')
   return data
+}
+
+export async function fetchPublic(path) {
+  try {
+    const r = await fetch(BASE + path)
+    if (!r.ok) return null
+    return r.json()
+  } catch {
+    return null
+  }
 }

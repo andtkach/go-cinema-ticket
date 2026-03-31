@@ -16,6 +16,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /movies", listMovies)
+	mux.HandleFunc("GET /cinemas", listCinemas)
 	mux.Handle("GET /", spaHandler("static"))
 
 	store := booking.NewRedisStore(redis.NewClient("localhost:16379", "redis", "redis"))
@@ -60,6 +61,23 @@ func spaHandler(dir string) http.Handler {
 		}
 		fs.ServeHTTP(w, r)
 	})
+}
+
+var cinemas = []cinemaResponse{
+	{ID: "grand-cinema", Name: "Grand Cinema", Location: "Downtown", Screens: 5},
+	{ID: "multiplex-central", Name: "Multiplex Central", Location: "Westside Mall", Screens: 8},
+	{ID: "arthouse", Name: "Arthouse", Location: "Old Town", Screens: 2},
+}
+
+func listCinemas(w http.ResponseWriter, r *http.Request) {
+	utils.WriteJSON(w, http.StatusOK, cinemas)
+}
+
+type cinemaResponse struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Location string `json:"location"`
+	Screens  int    `json:"screens"`
 }
 
 var movies = []movieResponse{

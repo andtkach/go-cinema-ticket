@@ -6,6 +6,7 @@ export default defineConfig({
   server: {
     port: 17070,
     proxy: {
+      '/cinemas': 'http://localhost:17080',
       '/movies': 'http://localhost:17080',
       '/sessions': 'http://localhost:17080',
     },
