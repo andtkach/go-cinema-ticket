@@ -11,7 +11,7 @@ export function SeatGrid({ movie, seats, userID, activeSession, onHold }) {
         {Array.from({ length: movie.rows }, (_, r) => (
           <div key={r} className="seat-row">
             <div className="row-label">{ROW_LABELS[r]}</div>
-            {Array.from({ length: movie.seats_per_row }, (_, s) => {
+            {Array.from({ length: movie.seats }, (_, s) => {
               const seatID = ROW_LABELS[r] + (s + 1)
               const info = statusMap[seatID]
               let cls = 'seat'

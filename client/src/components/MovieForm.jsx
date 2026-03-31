@@ -3,11 +3,11 @@ import { useState } from 'react'
 export function MovieForm({ initial = {}, onSubmit, onCancel, submitLabel = 'Save' }) {
   const [title, setTitle] = useState(initial.title ?? '')
   const [rows, setRows] = useState(initial.rows ?? 5)
-  const [seatsPerRow, setSeatsPerRow] = useState(initial.seats_per_row ?? 8)
+  const [seats, setSeats] = useState(initial.seats ?? 8)
 
   function handleSubmit(e) {
     e.preventDefault()
-    onSubmit({ title, rows: Number(rows), seats_per_row: Number(seatsPerRow) })
+    onSubmit({ title, rows: Number(rows), seats: Number(seats) })
   }
 
   return (
@@ -36,8 +36,8 @@ export function MovieForm({ initial = {}, onSubmit, onCancel, submitLabel = 'Sav
         <input
           type="number"
           min="1"
-          value={seatsPerRow}
-          onChange={e => setSeatsPerRow(e.target.value)}
+          value={seats}
+          onChange={e => setSeats(e.target.value)}
           required
         />
       </label>

@@ -25,13 +25,17 @@ func NewClient(dsn string) *sql.DB {
 func runMigrations(db *sql.DB) error {
 	_, err := db.Exec(`
 		CREATE TABLE IF NOT EXISTS movies (
-			id            TEXT        PRIMARY KEY,
+			id            UUID        PRIMARY KEY,
 			title         TEXT        NOT NULL,
 			rows          INTEGER     NOT NULL CHECK (rows > 0),
-			seats_per_row INTEGER     NOT NULL CHECK (seats_per_row > 0),
+			seats         INTEGER     NOT NULL CHECK (seats > 0),
 			created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
 			updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 		)
 	`)
-	return err
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

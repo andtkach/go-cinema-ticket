@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/andtkach/cinema/internal/utils"
+	"github.com/google/uuid"
 )
 
 type handler struct {
@@ -29,7 +30,11 @@ func (h *handler) ListMovies(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) GetMovie(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("movieID")
+	id, err := uuid.Parse(r.PathValue("movieID"))
+	if err != nil {
+		utils.WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid movie id"})
+		return
+	}
 	m, err := h.svc.GetByID(id)
 	if errors.Is(err, ErrMovieNotFound) {
 		utils.WriteJSON(w, http.StatusNotFound, map[string]string{"error": "not found"})
@@ -44,20 +49,29 @@ func (h *handler) GetMovie(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		ID          string `json:"id"`
-		Title       string `json:"title"`
-		Rows        int    `json:"rows"`
-		SeatsPerRow int    `json:"seats_per_row"`
+		ID    string `json:"id"`
+		Title string `json:"title"`
+		Rows  int    `json:"rows"`
+		Seats int    `json:"seats"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		utils.WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid body"})
 		return
 	}
-	if req.Title == "" || req.Rows <= 0 || req.SeatsPerRow <= 0 {
-		utils.WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "title, rows and seats_per_row are required"})
+	if req.Title == "" || req.Rows <= 0 || req.Seats <= 0 {
+		utils.WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "title, rows and seats are required"})
 		return
 	}
-	m, err := h.svc.Create(Movie{ID: req.ID, Title: req.Title, Rows: req.Rows, SeatsPerRow: req.SeatsPerRow})
+	var movieID uuid.UUID
+	if req.ID != "" {
+		parsedID, parseErr := uuid.Parse(req.ID)
+		if parseErr != nil {
+			utils.WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid id"})
+			return
+		}
+		movieID = parsedID
+	}
+	m, err := h.svc.Create(Movie{ID: movieID, Title: req.Title, Rows: req.Rows, Seats: req.Seats})
 	if errors.Is(err, ErrMovieIDConflict) {
 		utils.WriteJSON(w, http.StatusConflict, map[string]string{"error": "id already exists"})
 		return
@@ -70,21 +84,25 @@ func (h *handler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) UpdateMovie(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("movieID")
+	id, err := uuid.Parse(r.PathValue("movieID"))
+	if err != nil {
+		utils.WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid movie id"})
+		return
+	}
 	var req struct {
-		Title       string `json:"title"`
-		Rows        int    `json:"rows"`
-		SeatsPerRow int    `json:"seats_per_row"`
+		Title string `json:"title"`
+		Rows  int    `json:"rows"`
+		Seats int    `json:"seats"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		utils.WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid body"})
 		return
 	}
-	if req.Title == "" || req.Rows <= 0 || req.SeatsPerRow <= 0 {
-		utils.WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "title, rows and seats_per_row are required"})
+	if req.Title == "" || req.Rows <= 0 || req.Seats <= 0 {
+		utils.WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "title, rows and seats are required"})
 		return
 	}
-	m, err := h.svc.Update(Movie{ID: id, Title: req.Title, Rows: req.Rows, SeatsPerRow: req.SeatsPerRow})
+	m, err := h.svc.Update(Movie{ID: id, Title: req.Title, Rows: req.Rows, Seats: req.Seats})
 	if errors.Is(err, ErrMovieNotFound) {
 		utils.WriteJSON(w, http.StatusNotFound, map[string]string{"error": "not found"})
 		return
@@ -97,8 +115,12 @@ func (h *handler) UpdateMovie(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) DeleteMovie(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("movieID")
-	err := h.svc.Delete(id)
+	id, err := uuid.Parse(r.PathValue("movieID"))
+	if err != nil {
+		utils.WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid movie id"})
+		return
+	}
+	err = h.svc.Delete(id)
 	if errors.Is(err, ErrMovieNotFound) {
 		utils.WriteJSON(w, http.StatusNotFound, map[string]string{"error": "not found"})
 		return

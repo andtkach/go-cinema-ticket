@@ -8,7 +8,7 @@ export function MovieList({ movies, selectedMovie, onSelect }) {
           onClick={() => onSelect(m)}
         >
           <h3>{m.title}</h3>
-          <p>{m.rows} rows &times; {m.seats_per_row} seats</p>
+          <p>{m.rows} rows &times; {m.seats} seats</p>
         </div>
       ))}
     </div>

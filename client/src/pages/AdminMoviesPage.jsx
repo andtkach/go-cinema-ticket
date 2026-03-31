@@ -120,7 +120,7 @@ export default function AdminMoviesPage() {
             ) : (
               <>
                 <h3>{m.title}</h3>
-                <p>{m.rows} rows &times; {m.seats_per_row} seats</p>
+                <p>{m.rows} rows &times; {m.seats} seats</p>
                 <div className="movie-card-actions">
                   <button
                     className="btn btn--confirm"

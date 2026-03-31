@@ -400,7 +400,7 @@
               "</h3><p>" +
               m.rows +
               " rows &times; " +
-              m.seats_per_row +
+              m.seats +
               " seats</p>";
             card.addEventListener("click", function () {
               selectMovie(m);
@@ -458,7 +458,7 @@
             label.textContent = rowLabels[r];
             rowDiv.appendChild(label);
 
-            for (var s = 1; s <= selectedMovie.seats_per_row; s++) {
+            for (var s = 1; s <= selectedMovie.seats; s++) {
               var seatID = rowLabels[r] + s;
               var btn = document.createElement("button");
               btn.className = "seat";

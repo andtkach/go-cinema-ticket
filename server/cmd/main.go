@@ -119,20 +119,20 @@ type cinemaResponse struct {
 
 func seedDefaultMovies(db *sql.DB) {
 	defaults := []struct {
-		id          string
-		title       string
-		rows        int
-		seatsPerRow int
+		id    string
+		title string
+		rows  int
+		seats int
 	}{
-		{"inception", "Inception", 5, 8},
-		{"dune", "Dune: Part Two", 4, 6},
+		{"01960f13-4ec9-7ad0-ae6e-0a8c329f0901", "Inception", 5, 8},
+		{"01960f13-4eca-7f6d-9ab3-b0fe1f99c92a", "Dune: Part Two", 4, 6},
 	}
 	for _, m := range defaults {
 		_, err := db.Exec(
-			`INSERT INTO movies (id, title, rows, seats_per_row)
+			`INSERT INTO movies (id, title, rows, seats)
 			 VALUES ($1, $2, $3, $4)
 			 ON CONFLICT (id) DO NOTHING`,
-			m.id, m.title, m.rows, m.seatsPerRow,
+			m.id, m.title, m.rows, m.seats,
 		)
 		if err != nil {
 			log.Printf("seed movie %s: %v", m.id, err)

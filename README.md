@@ -260,4 +260,25 @@ After the wizard, re-apply the blueprint (Option A above) — all env vars stay 
 
 
 
-https://localhost:17091/app/
+Idp: http://localhost:17060/
+App: https://localhost:17091/app/
+
+
+-----------------
+
+Test accounts on Authentik
+
+name        |   login                   |   pass                |   group
+
+admin       |   admin@localhost         |   P@ssw0rd            |   admin
+
+scrooge     |   scrooge@localhost       |   P@ssw0rd            |   cinema-admins
+donald      |   donald@localhost        |   P@ssw0rd            |   cinema-admins
+
+huey        |   huey@localhost          |   P@ssw0rd            |   cinema-clients
+dewey       |   dewey@localhost         |   P@ssw0rd            |   cinema-clients
+louie       |   louie@localhost         |   P@ssw0rd            |   cinema-clients
+
+
+
+
