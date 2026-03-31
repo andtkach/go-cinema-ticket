@@ -81,6 +81,7 @@ func main() {
 	})
 
 	// Routes — bookings
+	mux.Handle("GET /bookings", requireAdmin(http.HandlerFunc(bookingHandler.ListBookingAudit)))
 	mux.HandleFunc("GET /movies/{movieID}/seats", bookingHandler.ListSeats)
 	mux.Handle("POST /movies/{movieID}/seats/{seatID}/hold", requireAuth(http.HandlerFunc(bookingHandler.HoldSeat)))
 	mux.Handle("PUT /sessions/{sessionID}/confirm", requireAuth(http.HandlerFunc(bookingHandler.ConfirmSession)))

@@ -21,8 +21,17 @@ type Booking struct {
 	ExpiresAt time.Time
 }
 
+type BookingAudit struct {
+	BookedAt  time.Time `json:"booked_at"`
+	MovieID   string    `json:"movie_id"`
+	MovieTitle string   `json:"movie_title"`
+	SeatID    string    `json:"seat_id"`
+	UserName  string    `json:"user_name"`
+}
+
 type BookingAuditStore interface {
 	InsertHold(b Booking) error
+	ListAll() ([]BookingAudit, error)
 }
 
 type BookingStore interface {

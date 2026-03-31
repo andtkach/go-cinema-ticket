@@ -36,6 +36,13 @@ func (s *Service) ListBookings(movieID string) []Booking {
 	return s.store.ListBookings(movieID)
 }
 
+func (s *Service) ListAuditBookings() ([]BookingAudit, error) {
+	if s.auditStore == nil {
+		return []BookingAudit{}, nil
+	}
+	return s.auditStore.ListAll()
+}
+
 func (s *Service) ConfirmSeat(ctx context.Context, sessionID string, userID string) (Booking, error) {
 	return s.store.Confirm(ctx, sessionID, userID)
 }

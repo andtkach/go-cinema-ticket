@@ -72,6 +72,18 @@ func (h *handler) ListSeats(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, http.StatusOK, seats)
 }
 
+func (h *handler) ListBookingAudit(w http.ResponseWriter, r *http.Request) {
+	rows, err := h.svc.ListAuditBookings()
+	if err != nil {
+		utils.WriteJSON(w, http.StatusInternalServerError, map[string]string{"error": "internal error"})
+		return
+	}
+	if rows == nil {
+		rows = []BookingAudit{}
+	}
+	utils.WriteJSON(w, http.StatusOK, rows)
+}
+
 type seatInfo struct {
 	SeatID    string `json:"seat_id"`
 	UserID    string `json:"user_id"`

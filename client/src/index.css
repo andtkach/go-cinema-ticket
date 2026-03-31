@@ -262,3 +262,25 @@ header h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; }
 }
 
 .movie-form input:focus { outline: none; border-color: var(--accent); }
+
+.bookings-table-wrap {
+  overflow-x: auto;
+}
+
+.bookings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.bookings-table th,
+.bookings-table td {
+  padding: 0.55rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.bookings-table th {
+  color: var(--text-muted);
+  font-weight: 600;
+}

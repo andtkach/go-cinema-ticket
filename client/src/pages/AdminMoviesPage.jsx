@@ -9,6 +9,7 @@ export default function AdminMoviesPage() {
   const navigate = useNavigate()
   const [ready, setReady] = useState(false)
   const [movies, setMovies] = useState([])
+  const [bookings, setBookings] = useState([])
   const [creating, setCreating] = useState(false)
   const [editing, setEditing] = useState(null)
   const [status, setStatus] = useState(null)
@@ -23,13 +24,25 @@ export default function AdminMoviesPage() {
   }, [navigate])
 
   useEffect(() => {
-    if (ready) loadMovies()
+    if (ready) {
+      loadMovies()
+      loadBookings()
+    }
   }, [ready])
 
   async function loadMovies() {
     try {
       const data = await api('GET', '/movies')
       setMovies(data || [])
+    } catch (err) {
+      showStatus(err.message, 'error')
+    }
+  }
+
+  async function loadBookings() {
+    try {
+      const data = await api('GET', '/bookings')
+      setBookings(Array.isArray(data) ? data : [])
     } catch (err) {
       showStatus(err.message, 'error')
     }
@@ -144,6 +157,36 @@ export default function AdminMoviesPage() {
       {movies.length === 0 && !creating && (
         <p className="empty-state">No movies yet. Add one above.</p>
       )}
+
+      <h2 className="home-section-title">Bookings</h2>
+      <div className="movie-card" style={{ margin: '0 auto', maxWidth: '980px', width: '100%' }}>
+        {bookings.length === 0 ? (
+          <p className="empty-state" style={{ padding: '1rem 0' }}>No bookings yet.</p>
+        ) : (
+          <div className="bookings-table-wrap">
+            <table className="bookings-table">
+              <thead>
+                <tr>
+                  <th>Booked at</th>
+                  <th>Movie</th>
+                  <th>Seat</th>
+                  <th>User</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bookings.map((b, idx) => (
+                  <tr key={`${b.booked_at}-${b.movie_id}-${b.seat_id}-${idx}`}>
+                    <td>{new Date(b.booked_at).toLocaleString()}</td>
+                    <td>{b.movie_title || b.movie_id}</td>
+                    <td>{b.seat_id}</td>
+                    <td>{b.user_name}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </>
   )
 }
