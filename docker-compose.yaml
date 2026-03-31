@@ -101,9 +101,9 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_DB: ${PG_DB:-authentik}
+      POSTGRES_DB: ${AUTHENTIK_POSTGRES_DB:-authentik}
       POSTGRES_PASSWORD: ${AUTHENTIK_POSTGRES_PASS:?database password required}
-      POSTGRES_USER: ${PG_USER:-authentik}
+      POSTGRES_USER: ${AUTHENTIK_POSTGRES_USER:-authentik}
     healthcheck:
       interval: 30s
       retries: 5
@@ -129,9 +129,9 @@ services:
       - .env
     environment:
       AUTHENTIK_POSTGRESQL__HOST: postgres-idp
-      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__NAME: ${AUTHENTIK_POSTGRES_DB:-authentik}
       AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRES_PASS}
-      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
+      AUTHENTIK_POSTGRESQL__USER: ${AUTHENTIK_POSTGRES_USER:-authentik}
       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?secret key required}
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.2.1}
     ports:
@@ -154,9 +154,9 @@ services:
       - .env
     environment:
       AUTHENTIK_POSTGRESQL__HOST: postgres-idp
-      AUTHENTIK_POSTGRESQL__NAME: ${PG_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__NAME: ${AUTHENTIK_POSTGRES_DB:-authentik}
       AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRES_PASS}
-      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-authentik}
+      AUTHENTIK_POSTGRESQL__USER: ${AUTHENTIK_POSTGRES_USER:-authentik}
       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?secret key required}
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.2.1}
     restart: unless-stopped

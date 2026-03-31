@@ -1,8 +1,8 @@
 .PHONY: infra-up infra-down infra-restart infra-logs infra-ps build-server run-server test-server tidy-server install-client dev-client build-client publish-client nginx-certs nginx-reload run-all
 
 # All-in-one
-run-all: infra-up publish-client
-	cd server && env $$(grep -v '^#' ../.env | xargs) go run ./cmd &
+run-all: infra-up publish-client build-server
+	env $$(grep -v '^#' .env | xargs) ./server/main &
 	@sleep 2 && xdg-open https://localhost:17091/app/ &
 
 # Infrastructure
@@ -24,7 +24,7 @@ infra-ps:
 
 # Server
 build-server:
-	cd server && go build -o main ./cmd
+	cd server && go build -o main ./cmd && echo "server built"
 
 run-server: infra-up
 	cd server && env $$(grep -v '^#' ../.env | xargs) go run ./cmd

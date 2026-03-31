@@ -2,31 +2,44 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"net/http"
 	"os"
 
+	pgadapter "github.com/andtkach/cinema/internal/adapters/postgres"
 	"github.com/andtkach/cinema/internal/adapters/redis"
 	"github.com/andtkach/cinema/internal/auth"
 	"github.com/andtkach/cinema/internal/booking"
-	"github.com/andtkach/cinema/internal/utils"
+	"github.com/andtkach/cinema/internal/movies"
 )
 
 func main() {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /movies", listMovies)
-	mux.HandleFunc("GET /cinemas", listCinemas)
-	mux.Handle("GET /", spaHandler("static"))
+	// Postgres — movies
+	dsn := os.Getenv("POSTGRES_APP_DSN")
+	if dsn == "" {
+		dsn = "postgres://postgres:postgres@localhost:15432/cinema?sslmode=disable"
+	}
+	db := pgadapter.NewClient(dsn)
+	seedDefaultMovies(db)
 
+	movieStore := movies.NewPostgresStore(db)
+	movieSvc := movies.NewService(movieStore)
+	movieHandler := movies.NewHandler(movieSvc)
+
+	// Redis — bookings
 	store := booking.NewRedisStore(redis.NewClient("localhost:16379", "redis", "redis"))
 	svc := booking.NewService(store)
 	bookingHandler := booking.NewHandler(svc)
 
+	// Auth middleware
 	issuerURL := os.Getenv("AUTHENTIK_ISSUER_URL")
 	clientID := os.Getenv("AUTHENTIK_CLIENT_ID")
 
-	var requireAuth func(http.Handler) http.Handler
+	requireAuth := func(next http.Handler) http.Handler { return next }
+	requireAdmin := func(next http.Handler) http.Handler { return next }
 
 	if issuerURL != "" && clientID != "" {
 		authMiddleware, err := auth.NewMiddleware(context.Background(), issuerURL, clientID)
@@ -34,18 +47,52 @@ func main() {
 			log.Fatalf("auth init: %v", err)
 		}
 		requireAuth = authMiddleware.RequireAuth
+		requireAdmin = func(next http.Handler) http.Handler {
+			return authMiddleware.RequireAuth(authMiddleware.RequireGroup("cinema-admins", next))
+		}
 		log.Printf("auth enabled: issuer=%s", issuerURL)
 	} else {
-		requireAuth = func(next http.Handler) http.Handler { return next }
 		log.Println("auth disabled: AUTHENTIK_ISSUER_URL or AUTHENTIK_CLIENT_ID not set")
 	}
 
+	// Routes — movies (from DB)
+	mux.HandleFunc("/movies", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			movieHandler.ListMovies(w, r)
+		case http.MethodPost:
+			requireAdmin(http.HandlerFunc(movieHandler.CreateMovie)).ServeHTTP(w, r)
+		default:
+			http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
+		}
+	})
+	mux.HandleFunc("/movies/{movieID}", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			movieHandler.GetMovie(w, r)
+		case http.MethodPut:
+			requireAdmin(http.HandlerFunc(movieHandler.UpdateMovie)).ServeHTTP(w, r)
+		case http.MethodDelete:
+			requireAdmin(http.HandlerFunc(movieHandler.DeleteMovie)).ServeHTTP(w, r)
+		default:
+			http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
+		}
+	})
+
+	// Routes — bookings
 	mux.HandleFunc("GET /movies/{movieID}/seats", bookingHandler.ListSeats)
 	mux.Handle("POST /movies/{movieID}/seats/{seatID}/hold", requireAuth(http.HandlerFunc(bookingHandler.HoldSeat)))
 	mux.Handle("PUT /sessions/{sessionID}/confirm", requireAuth(http.HandlerFunc(bookingHandler.ConfirmSession)))
 	mux.Handle("DELETE /sessions/{sessionID}", requireAuth(http.HandlerFunc(bookingHandler.ReleaseSession)))
 
-	if err := http.ListenAndServe(":17080", mux); err != nil {
+	mux.Handle("/", spaHandler("static"))
+
+	logged := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("→ %s %s", r.Method, r.URL.Path)
+		mux.ServeHTTP(w, r)
+	})
+
+	if err := http.ListenAndServe(":17080", logged); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -63,16 +110,6 @@ func spaHandler(dir string) http.Handler {
 	})
 }
 
-var cinemas = []cinemaResponse{
-	{ID: "grand-cinema", Name: "Grand Cinema", Location: "Downtown", Screens: 5},
-	{ID: "multiplex-central", Name: "Multiplex Central", Location: "Westside Mall", Screens: 8},
-	{ID: "arthouse", Name: "Arthouse", Location: "Old Town", Screens: 2},
-}
-
-func listCinemas(w http.ResponseWriter, r *http.Request) {
-	utils.WriteJSON(w, http.StatusOK, cinemas)
-}
-
 type cinemaResponse struct {
 	ID       string `json:"id"`
 	Name     string `json:"name"`
@@ -80,18 +117,25 @@ type cinemaResponse struct {
 	Screens  int    `json:"screens"`
 }
 
-var movies = []movieResponse{
-	{ID: "inception", Title: "Inception", Rows: 5, SeatsPerRow: 8},
-	{ID: "dune", Title: "Dune: Part Two", Rows: 4, SeatsPerRow: 6},
-}
-
-func listMovies(w http.ResponseWriter, r *http.Request) {
-	utils.WriteJSON(w, http.StatusOK, movies)
-}
-
-type movieResponse struct {
-	ID          string `json:"id"`
-	Title       string `json:"title"`
-	Rows        int    `json:"rows"`
-	SeatsPerRow int    `json:"seats_per_row"`
+func seedDefaultMovies(db *sql.DB) {
+	defaults := []struct {
+		id          string
+		title       string
+		rows        int
+		seatsPerRow int
+	}{
+		{"inception", "Inception", 5, 8},
+		{"dune", "Dune: Part Two", 4, 6},
+	}
+	for _, m := range defaults {
+		_, err := db.Exec(
+			`INSERT INTO movies (id, title, rows, seats_per_row)
+			 VALUES ($1, $2, $3, $4)
+			 ON CONFLICT (id) DO NOTHING`,
+			m.id, m.title, m.rows, m.seatsPerRow,
+		)
+		if err != nil {
+			log.Printf("seed movie %s: %v", m.id, err)
+		}
+	}
 }

@@ -13,8 +13,9 @@ export async function api(method, path, body) {
   const r = await fetch(BASE + path, opts)
   if (r.status === 401) { redirectToLogin(); return }
   if (r.status === 204) return null
-  const data = await r.json()
-  if (!r.ok) throw new Error(data.error || 'request failed')
+  let data
+  try { data = await r.json() } catch { data = {} }
+  if (!r.ok) throw new Error(data.error || `${r.status} ${r.statusText}`)
   return data
 }
 

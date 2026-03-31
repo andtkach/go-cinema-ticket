@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { fetchPublic } from '../api'
+import { getUserInfo, isAdmin } from '../auth'
 
 export default function HomePage() {
+  const userInfo = getUserInfo()
   const [cinemas, setCinemas] = useState([])
 
   useEffect(() => {
@@ -12,11 +14,16 @@ export default function HomePage() {
 
   return (
     <>
-      <Header />
+      <Header userInfo={userInfo} />
       <div className="home-hero">
         <h2>Welcome to Cinema Booking</h2>
         <p>Pick a cinema, choose your seat, and confirm in seconds.</p>
-        <Link to="/booking" className="btn btn--confirm home-cta">Book a Seat</Link>
+        <div className="home-actions">
+          <Link to="/booking" className="btn btn--confirm home-cta">Book a Seat</Link>
+          {isAdmin() && (
+            <Link to="/admin/movies" className="btn btn--release home-cta">Manage Movies</Link>
+          )}
+        </div>
       </div>
       {cinemas.length > 0 && (
         <>

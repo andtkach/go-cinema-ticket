@@ -173,6 +173,7 @@ header h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; }
 .home-hero h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.6rem; }
 .home-hero p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.6rem; }
 
+.home-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 .home-cta { display: inline-block; text-decoration: none; padding: 0.7rem 1.8rem; font-size: 0.9rem; }
 
 .home-section-title {
@@ -192,3 +193,40 @@ header h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; }
 }
 
 .movie-card-link:hover { text-decoration: underline; }
+
+.header-user { display: flex; align-items: center; gap: 0.8rem; }
+
+.admin-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.movie-card--admin .movie-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+}
+
+.movie-form { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.4rem; }
+
+.movie-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.movie-form input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.4rem 0.6rem;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.85rem;
+}
+
+.movie-form input:focus { outline: none; border-color: var(--accent); }
