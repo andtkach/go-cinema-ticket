@@ -1,9 +1,13 @@
-.PHONY: infra-up infra-down infra-restart infra-logs infra-ps build-server run-server test-server tidy-server install-client dev-client build-client publish-client nginx-certs nginx-reload run-all
+.PHONY: infra-up infra-down infra-restart infra-logs infra-ps build-server run-server test-server tidy-server install-client dev-client build-client publish-client nginx-certs nginx-reload run-all stop-all
 
 # All-in-one
 run-all: infra-up publish-client build-server
 	cd server && env $$(grep -v '^#' ../.env | xargs) ./main &
 	@sleep 2 && xdg-open https://localhost:17091/app/ &
+
+stop-all: infra-down
+	-@pkill -f 'server/main|go run ./cmd|vite' || true
+	@echo "All services stopped. infra-down executed."
 
 # Infrastructure
 infra-up:
